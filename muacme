@@ -1,0 +1,38 @@
+#!/bin/sh
+# vim: set ts=4:
+#---help---
+# Usage:
+#   muacme [-h] [-V]
+#
+# Arguments:
+#
+# Options:
+#   -V              Print script version and exit.
+#   -h              Show this message and exit.
+#
+# Please reports bugs at <https://github.com/jirutka/muacme/issues>.
+#---help---
+set -eu
+
+readonly PROGNAME='muacme'
+readonly VERSION='0.0.0'
+
+
+die() {
+	printf "$PROGNAME: %s\n" "$1" >&2
+	exit ${2:-1}
+}
+
+help() {
+	sed -n '/^#---help---/,/^#---help---/p' "$0" | sed 's/^# \?//; 1d;$d;'
+}
+
+
+while getopts ':hV' OPT; do
+	case "$OPT" in
+		h) help; exit 0;;
+		V) echo "$PROGNAME $VERSION"; exit 0;;
+		\?) die "unrecognized option -$OPTARG!" 100;;
+	esac
+done
+shift $((OPTIND - 1))

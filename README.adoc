@@ -1,0 +1,31 @@
+= muacme
+:proj-name: muacme
+:gh-name: jirutka/{proj-name}
+:version: 0.0.0
+
+TODO
+
+
+== Requirements
+
+TODO
+
+
+== Installation
+
+[source, sh, subs="+attributes"]
+wget https://github.com/{gh-name}/archive/v{version}/{proj-name}-v{version}.tar.gz
+tar -xzf {proj-name}-v{version}.tar.gz
+cd {proj-name}-v{version}
+make install
+
+
+== Usage
+
+TODO
+
+
+== License
+
+This project is licensed under http://opensource.org/licenses/MIT/[MIT License].
+For the full text of the license, see the link:LICENSE[LICENSE] file.
