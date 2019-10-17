@@ -17,9 +17,9 @@ This a convenient wrapper for the ACMEv2 client https://github.com/ndilieto/uacm
 == Installation
 
 [source, sh, subs="+attributes"]
-wget https://github.com/{gh-name}/archive/v{version}/{proj-name}-v{version}.tar.gz
-tar -xzf {proj-name}-v{version}.tar.gz
-cd {proj-name}-v{version}
+wget https://github.com/{gh-name}/archive/v{version}/{proj-name}-{version}.tar.gz
+tar -xzf {proj-name}-{version}.tar.gz
+cd {proj-name}-{version}
 make install
 
 
