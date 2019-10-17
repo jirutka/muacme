@@ -1,14 +1,17 @@
-= muacme
+= μacme
 :proj-name: muacme
 :gh-name: jirutka/{proj-name}
 :version: 0.0.0
 
-TODO
+This a convenient wrapper for the ACMEv2 client https://github.com/ndilieto/uacme[uacme] that provides a ready-to-go solution for a cron-based periodic renewal of an arbitrary number of TLS certificates.
 
 
 == Requirements
 
-TODO
+* https://github.com/ndilieto/uacme[uacme]
+* http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html[POSIX-sh] compatible shell with `pipefail` (e.g. Busybox ash, ZSH, bash, …)
+* `grep`, `sed`, `tr`, `xargs` (BSD, Busybox or GNU)
+* `openssl` command (should work with OpenSSL and LibreSSL)
 
 
 == Installation
@@ -29,3 +32,8 @@ TODO
 
 This project is licensed under http://opensource.org/licenses/MIT/[MIT License].
 For the full text of the license, see the link:LICENSE[LICENSE] file.
+
+
+== See Also
+
+* https://ndilieto.github.io/uacme/[uacme(1)]

@@ -1,38 +1,263 @@
 #!/bin/sh
 # vim: set ts=4:
 #---help---
-# Usage:
+# USAGE:
 #   muacme [-h] [-V]
+#   muacme issue [options] <domain> [<alt-name>...]
+#   muacme renew [options] [all | <domain>...]
 #
-# Arguments:
+# Issue a new certificate for the domain with optional alternative names (SAN).
+# If such certificate already exists, it will be forcibly renewed.
 #
-# Options:
-#   -V              Print script version and exit.
-#   -h              Show this message and exit.
+# Renew all the existing certificates, or certificates for the specified
+# domain(s), that are close to expiration. If at least one certificate is
+# renewed, the configured renew hook is executed.
+#
+# ARGUMENTS:
+#   <domain>      Fully qualified domain name (CN). If action is "renew" and no
+#                 domain is specified, it tries to renew all certificates.
+#   <alt-name>    Alternative names (SAN) for the domain name.
+#
+# OPTIONS:
+#   -c FILE       Path of the config file (default is /etc/macme.conf).
+#   -f            Force updating the certificate even if it's too soon.
+#   -l            Log to syslog in addition to STDERR.
+#   -s            Use Let's Encrypt staging URL for testing.
+#   -v            Be verbose.
+#   -V            Print script version and exit.
+#   -h            Show this message and exit.
+#
+# ENVIRONMENT:
+#   UACME_CONFIG  The same as -c.
+#   UACME_DEBUG   The same as -v.
+#   UACME_FORCE   The same as -f.
+#   UACME_STAGE   The same as -s.
+#   UACME_SYSLOG  The same as -l.
+#
+# EXIT CODES:
+#   1             Generic error.
+#   2             Invalid usage or missing required argument.
+#   3             Config or hook file not found, not readable or executable.
+#   4             Failed to parse PEM file.
+#   5             uacme failure.
+#   6             renew_hook failure.
 #
 # Please reports bugs at <https://github.com/jirutka/muacme/issues>.
 #---help---
 set -eu
 
+if ( set -o pipefail 2>/dev/null ); then
+	set -o pipefail
+else
+	echo 'ERROR: Your shell does not support option pipefail!' >&2
+	exit 1
+fi
+
 readonly PROGNAME='muacme'
 readonly VERSION='0.0.0'
 
+# Configuration variables that may be overwritten by the config file.
+acme_url=
+certs_dir='/etc/ssl/uacme'
+challenge_hook='/usr/share/uacme/uacme.sh'
+force=no
+key_bits=3072
+key_type='RSA'
+days=30
+must_staple=no
+renew_hook=
+staging=no
+syslog=no
+syslog_facility='cron'
+verbose=no
 
-die() {
-	printf "$PROGNAME: %s\n" "$1" >&2
-	exit ${2:-1}
-}
 
 help() {
 	sed -n '/^#---help---/,/^#---help---/p' "$0" | sed 's/^# \?//; 1d;$d;'
 }
 
+yesno() {
+	case "$(printf %s "$1" | tr '[A-Z]' '[a-z]')" in
+		y | yes | true | 1) return 0;;
+		*) return 1;;
+	esac
+}
 
-while getopts ':hV' OPT; do
+log() {
+	local level="$1"
+	local msg="$2"
+
+	if yesno "$syslog"; then
+		logger -s -t "$PROGNAME" -p "$syslog_facility.$level" "$msg" 2>&3
+	elif [ "$level" != 'debug' ] || yesno "$verbose"; then
+		printf "$PROGNAME: %s\n" "$msg" >&2
+	fi
+}
+
+die() {
+	log err "$2"
+	exit $1
+}
+
+optif() {
+	case "$1" in
+		*=) test -n "$2" && printf %s "$1'$2'";;
+		*) yesno "$2" && printf %s "$1";;
+	esac
+}
+
+_uacme() {
+	local ret=0
+
+	uacme \
+		--bits="$key_bits" \
+		--confdir="$certs_dir" \
+		--days="$days" \
+		--hook="$challenge_hook" \
+		--type="$key_type" \
+		--yes \
+		$(optif --acme-url= "$acme_url") \
+		$(optif --force "$force") \
+		$(optif --must-staple "$must_staple") \
+		$(optif --verbose "$verbose") \
+		"$@" || ret=$?
+
+	case "$ret" in
+		0) return 0;;
+		1) return 100;;  # certificate is still current
+		*) return 3;;
+	esac
+}
+
+# Parses and prints Subject Alternative Names of the type DNS excluding the CN
+# from the specified PEM file.
+cert_altnames() {
+	local filename="$1"
+	local cn=$(basename "${filename%/*}")  # derive CN from the cert's directory name
+	local san=
+
+	local text=$(openssl x509 -noout -text -in "$filename")
+	# openssl is crappy, it returns 0 even on error (not because of "local")
+	printf '%s\n' "$text" \
+		| grep -q '^Certificate:' || return 1
+
+	printf '%s\n' "$text" \
+		| grep -A1 'X509v3 Subject Alternative Name:' \
+		| sed -En 's/\s*//g;s/DNS:([^, ]+),?/\1 /gp' \
+		| xargs printf '%s\n' \
+		| grep -xv "$cn" || :
+}
+
+ls_domains() {
+	find "$certs_dir"/private -type d -mindepth 1 -maxdepth 1 -exec basename {} \;
+}
+
+renew_cert() {
+	local domain="$1"
+	local cert_file="$certs_dir/$domain/cert.pem"
+	local altnames=''
+
+	if [ -r "$cert_file" ]; then
+		altnames=$(cert_altnames "$cert_file") \
+			|| die 4 "failed to parse PEM file $cert_file"
+	fi
+	log debug "trying to renew $domain${altnames:+" with alt names $altnames"}"
+	_uacme issue "$domain" $altnames
+}
+
+renew() {
+	local status=0
+	local renewed=''
+	local domain rc
+
+	[ $# -eq 1 ] && [ "$1" = 'all' ] && shift
+
+	for domain in ${@:-$(ls_domains)}; do
+		rc=0; renew_cert "$domain" || rc=$?
+		case "$rc" in
+			0) renewed="$renewed $domain";;
+			100) ;;  # cert is up-to-date
+			*) status=5;;
+		esac
+	done
+
+	if [ "$renewed" ]; then
+		log notice "renewed certificate for$renewed"
+		if [ "$renew_hook" ]; then
+			"$renew_hook" $renewed || status=6
+		fi
+	else
+		log info 'no certificates have been renewed'
+	fi
+
+	return $status
+}
+
+issue() {
+	force=yes
+	_uacme issue "$@"
+}
+
+
+: ${UACME_CONFIG:="/etc/muacme.conf"}
+
+# We use additional FD to allow sending log messages both to syslog (with
+# the specified log level) and stderr and at the same time redirecting
+# stdout/stderr of the main part of the script (that includes direct logging to
+# syslog) to syslog on the debug level without duplicating messages.
+exec 3>&2
+trap 'exec 3<&-' EXIT HUP INT TERM
+
+_action=
+case "${1:-}" in
+	issue | renew) _action="$1"; shift;;
+	-*) ;;
+	'') help >&2; exit 1;;
+	*) die 2 "unknown action: $1";;
+esac
+
+while getopts ':c:fhlsVv' OPT; do
 	case "$OPT" in
+		c) UACME_CONFIG="$OPTARG";;
+		f) UACME_FORCE=yes;;
 		h) help; exit 0;;
+		l) UACME_SYSLOG=yes; syslog=yes;;  # intentionally set $syslog early
+		s) UACME_STAGE=yes;;
 		V) echo "$PROGNAME $VERSION"; exit 0;;
-		\?) die "unrecognized option -$OPTARG!" 100;;
+		v) UACME_DEBUG=yes;;
+		\?) die 2 "unknown option: -$OPTARG";;
 	esac
 done
 shift $((OPTIND - 1))
+
+[ "$_action" ] || case "${1:-}" in
+	issue | renew) _action="$1"; shift;;
+esac
+case "$_action" in
+	issue) test $# -gt 0 || die 2 'missing required argument!';;
+	'') die 2 'no action specified!';;
+esac
+readonly _action
+
+[ -r "$UACME_CONFIG" ] \
+	|| die 3 "config '$UACME_CONFIG' does not exit or is not readable!"
+. "$UACME_CONFIG" \
+	|| die 3 "failed to source config $UACME_CONFIG!"
+
+force=${UACME_FORCE:-$force}
+staging=${UACME_STAGE:-$staging}
+syslog=${UACME_SYSLOG:-$syslog}
+verbose=${UACME_DEBUG:-$verbose}
+
+if [ "$challenge_hook" ] && ! [ -x "$challenge_hook" ]; then
+	die 3 "hook '$challenge_hook' does not exist or is not executable!"
+fi
+if [ "$renew_hook" ] && ! [ -x "$renew_hook" ]; then
+	die 3 "hook '$renew_hook' does not exist or is not executable!"
+fi
+
+if yesno "$syslog"; then
+	$_action "$@" 2>&1 | logger -t "$PROGNAME" -p "$syslog_facility.debug"
+else
+	$_action "$@"
+fi
