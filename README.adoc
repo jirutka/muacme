@@ -25,7 +25,37 @@ make install
 
 == Usage
 
-TODO
+See the help section in link:muacme#L3[muacme] (or run `muacme -h`) and comments in link:muacme.conf[].
+
+
+== Examples
+
+* Issue a certificate for domain _foo.example.org_ with alternative name _bar.example.org_ and options specified in the configuration file _/etc/muacme.conf_:
++
+[source, sh]
+muacme issue example.org www.example.org
+
+* Renew all certificates that are close to their expiration:
++
+[source, sh]
+muacme renew all
+
+* Renew certificate for domain _foo.example.org_ even if it’s too soon:
++
+[source, sh]
+muacme renew -f foo.example.org
+
+* A renew hook for reloading nginx on a system using OpenRC:
++
+[source, sh]
+#!/bin/sh
+/etc/init.d/nginx --ifstarted --quiet reload
+
+* A cron script _/etc/periodic/weekly/muacme-renew-all_:
++
+[source, sh]
+#!/bin/sh
+exec muacme renew -l all
 
 
 == License
