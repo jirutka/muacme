@@ -257,7 +257,7 @@ if [ "$renew_hook" ] && ! [ -x "$renew_hook" ]; then
 fi
 
 if yesno "$syslog"; then
-	$_action "$@" 2>&1 | logger -t "$PROGNAME" -p "$syslog_facility.debug"
+	$_action "$@" 2>&1 | logger -s -t "$PROGNAME" -p "$syslog_facility.debug"
 else
 	$_action "$@"
 fi
