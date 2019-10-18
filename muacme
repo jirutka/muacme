@@ -54,7 +54,7 @@ else
 fi
 
 readonly PROGNAME='muacme'
-readonly VERSION='0.1.0'
+readonly VERSION='0.1.1'
 
 # Configuration variables that may be overwritten by the config file.
 acme_url=
