@@ -161,7 +161,7 @@ renew_cert() {
 		altnames=$(cert_altnames "$cert_file") \
 			|| die 4 "failed to parse PEM file $cert_file"
 	fi
-	log debug "trying to renew $domain${altnames:+" with alt names $altnames"}"
+	log debug "checking $domain${altnames:+" (alt names $altnames)"}"
 	_uacme issue "$domain" $altnames
 }
 
@@ -175,19 +175,26 @@ renew() {
 	for domain in ${@:-$(ls_domains)}; do
 		rc=0; renew_cert "$domain" || rc=$?
 		case "$rc" in
-			0) renewed="$renewed $domain";;
-			100) ;;  # cert is up-to-date
+			0)
+				log info "certificate for $domain was renewed"
+				renewed="$renewed $domain"
+			;;
+			100)
+				log info "certificate for $domain is up-to-date"
+			;;
 			*) status=5;;
 		esac
 	done
 
 	if [ "$renewed" ]; then
-		log notice "renewed certificate for$renewed"
+		local count=$(echo "$renewed" | wc -w)
+		log notice "$count certificates were renewed${renew_hook:+", executing $renew_hook"}"
+
 		if [ "$renew_hook" ]; then
 			"$renew_hook" $renewed || status=6
 		fi
 	else
-		log info 'no certificates have been renewed'
+		log notice 'no certificates were renewed'
 	fi
 
 	return $status
