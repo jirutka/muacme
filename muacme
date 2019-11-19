@@ -7,7 +7,7 @@
 #   muacme renew [options] [all | <domain>...]
 #
 # Issue a new certificate for the domain with optional alternative names (SAN).
-# If such certificate already exists, it will be forcibly renewed.
+# If such certificate already exists and -f is not used, nothing will be done.
 #
 # Renew all the existing certificates, or certificates for the specified
 # domain(s), that are close to expiration. If at least one certificate is
@@ -106,6 +106,15 @@ optif() {
 	esac
 }
 
+issubset() {
+	local a="$1"
+	local b="$2"
+
+	local i; for i in $(printf '%s\n' $a); do
+		printf '%s\n' $b | grep -qFx "$i" || return 1
+	done
+}
+
 _uacme() {
 	local ret=0
 
@@ -201,8 +210,18 @@ renew() {
 }
 
 issue() {
-	force=yes
-	_uacme issue "$@"
+	local domain="$1"; shift
+	local altnames="$*"
+	local cert_file="$certs_dir/$domain/cert.pem"
+
+	if [ "$force" = no ] && [ -f "$cert_file" ] \
+		&& issubset "$altnames" "$(cert_altnames "$cert_file")"
+	then
+		log debug "certificate for $domain already exists"
+	else
+		log info "requesting certificate for $domain"
+		_uacme issue "$domain" $altnames
+	fi
 }
 
 
