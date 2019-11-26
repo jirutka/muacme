@@ -4,6 +4,7 @@
 # USAGE:
 #   muacme [-h] [-V]
 #   muacme issue [options] <domain> [<alt-name>...]
+#   muacme issue [options] -F <domains-file>
 #   muacme renew [options] [all | <domain>...]
 #
 # Issue a new certificate for the domain with optional alternative names (SAN).
@@ -17,9 +18,12 @@
 #   <domain>      Fully qualified domain name (CN). If action is "renew" and no
 #                 domain is specified, it tries to renew all certificates.
 #   <alt-name>    Alternative names (SAN) for the domain name.
+#   <domain-file> Path of the file with list of domain names (and their
+#                 alternative names, separated by a space), one per line.
 #
 # OPTIONS:
 #   -c FILE       Path of the config file (default is /etc/macme.conf).
+#   -F            Read domains (and their alt names) from file.
 #   -f            Force updating the certificate even if it's too soon.
 #   -l            Log to syslog in addition to STDERR.
 #   -s            Use Let's Encrypt staging URL for testing.
@@ -209,7 +213,7 @@ renew() {
 	return $status
 }
 
-issue() {
+issue_cert() {
 	local domain="$1"; shift
 	local altnames="$*"
 	local cert_file="$certs_dir/$domain/cert.pem"
@@ -221,6 +225,17 @@ issue() {
 	else
 		log info "requesting certificate for $domain"
 		_uacme issue "$domain" $altnames
+	fi
+}
+
+issue() {
+	if [ "$_from_file" = yes ]; then
+		while read args; do
+			case "$args" in '#'* | '') continue;; esac
+			issue_cert $args
+		done < "$1"
+	else
+		issue_cert "$@"
 	fi
 }
 
@@ -242,10 +257,12 @@ case "${1:-}" in
 	*) die 2 "unknown action: $1";;
 esac
 
-while getopts ':c:fhlsVv' OPT; do
+_from_file=no
+while getopts ':c:FfhlsVv' OPT; do
 	case "$OPT" in
 		c) UACME_CONFIG="$OPTARG";;
 		f) UACME_FORCE=yes;;
+		F) _from_file=yes;;
 		h) help; exit 0;;
 		l) UACME_SYSLOG=yes; syslog=yes;;  # intentionally set $syslog early
 		s) UACME_STAGE=yes;;
@@ -280,6 +297,9 @@ if [ "$challenge_hook" ] && ! [ -x "$challenge_hook" ]; then
 fi
 if [ "$renew_hook" ] && ! [ -x "$renew_hook" ]; then
 	die 3 "hook '$renew_hook' does not exist or is not executable!"
+fi
+if [ "$_from_file" = yes ] && ! [ -r "$1" ]; then
+	die 3 "file '$1' does not exist or not readable!"
 fi
 
 if yesno "$syslog"; then
