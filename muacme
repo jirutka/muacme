@@ -229,6 +229,11 @@ issue_cert() {
 }
 
 issue() {
+	# first run, create a new account
+	if [ ! -d "$certs_dir" ]; then
+		uacme -v -c "$certs_dir" new
+	fi
+
 	if [ "$_from_file" = yes ]; then
 		while read args; do
 			case "$args" in '#'* | '') continue;; esac
