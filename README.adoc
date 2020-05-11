@@ -40,6 +40,11 @@ uacme -v -c /etc/ssl/uacme new [EMAIL]
 [source, sh]
 muacme issue example.org www.example.org
 
+* Issue a certificate for each domain listed in the given file (one per line with optional alternative names separated by a space) for which we don’t have it already:
++
+[source,sh]
+muacme issue -F domains.list
+
 * Renew all certificates that are close to their expiration:
 +
 [source, sh]
