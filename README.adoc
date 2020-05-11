@@ -27,6 +27,11 @@ make install
 
 See the help section in link:muacme#L3[muacme] (or run `muacme -h`) and comments in link:muacme.conf[].
 
+Note that you have to create an ACME account first (see https://ndilieto.github.io/uacme/uacme.html#_usage[uacme(1)] for more information):
+
+[source]
+uacme -v -c /etc/ssl/uacme new [EMAIL]
+
 
 == Examples
 
