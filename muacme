@@ -240,7 +240,7 @@ issue() {
 }
 
 
-: ${UACME_CONFIG:="/etc/muacme.conf"}
+: ${UACME_CONFIG:="/etc/muacme/muacme.conf"}
 
 # We use additional FD to allow sending log messages both to syslog (with
 # the specified log level) and stderr and at the same time redirecting

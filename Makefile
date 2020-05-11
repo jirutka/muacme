@@ -20,8 +20,8 @@ all: help
 install:
 	$(INSTALL) -d $(DESTDIR)$(bindir)
 	$(INSTALL) -m 755 $(SCRIPT_NAME) $(DESTDIR)$(bindir)/$(SCRIPT_NAME)
-	$(INSTALL) -d $(DESTDIR)$(sysconfdir)
-	$(INSTALL) -m 644 $(SCRIPT_NAME).conf $(DESTDIR)$(sysconfdir)/$(SCRIPT_NAME).conf
+	$(INSTALL) -d $(DESTDIR)$(sysconfdir)/$(SCRIPT_NAME)
+	$(INSTALL) -m 644 $(SCRIPT_NAME).conf $(DESTDIR)$(sysconfdir)/$(SCRIPT_NAME)/$(SCRIPT_NAME).conf
 
 #: Update version in the script and README.adoc to $VERSION.
 bump-version:
