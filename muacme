@@ -133,6 +133,7 @@ _uacme() {
 		$(optif --force "$force") \
 		$(optif --must-staple "$must_staple") \
 		$(optif --verbose "$verbose") \
+		$(optif --staging "$staging") \
 		"$@" || ret=$?
 
 	case "$ret" in
