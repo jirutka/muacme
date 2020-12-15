@@ -35,7 +35,7 @@ uacme -v -c /etc/ssl/uacme new [EMAIL]
 
 == Examples
 
-* Issue a certificate for domain _foo.example.org_ with alternative name _bar.example.org_ and options specified in the configuration file _/etc/muacme/muacme.conf_:
+* Issue a certificate for domain _example.org_ with alternative name _www.example.org_ and options specified in the configuration file _/etc/muacme/muacme.conf_:
 +
 [source, sh]
 muacme issue example.org www.example.org
@@ -50,10 +50,10 @@ muacme issue -F domains.list
 [source, sh]
 muacme renew all
 
-* Renew certificate for domain _foo.example.org_ even if it’s too soon:
+* Renew certificate for domain _example.org_ even if it’s too soon:
 +
 [source, sh]
-muacme renew -f foo.example.org
+muacme renew -f example.org
 
 * A renew hook for reloading nginx on a system using OpenRC:
 +
