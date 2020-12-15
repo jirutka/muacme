@@ -35,12 +35,13 @@ uacme -v -c /etc/ssl/uacme new [EMAIL]
 
 == Examples
 
-* Issue a certificate for domain _example.org_ with alternative name _www.example.org_ and options specified in the configuration file _/etc/muacme/muacme.conf_:
+* Issue a certificate for domain _example.org_ with alternative name _www.example.org_ (and using options specified in the configuration file _/etc/muacme/muacme.conf_):
 +
 [source, sh]
 muacme issue example.org www.example.org
 
-* Issue a certificate for each domain listed in the given file (one per line with optional alternative names separated by a space) for which we don’t have it already:
+* Issue a certificate for each domain listed in the given file (one per line with optional alternative names separated by a space) for which we don’t have one already.
+Domains for which we already have a certificate will be ignored.
 +
 [source,sh]
 muacme issue -F domains.list
