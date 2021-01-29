@@ -2,6 +2,7 @@ SCRIPT_NAME := muacme
 
 prefix      := /usr/local
 bindir      := $(prefix)/bin
+datadir     := $(prefix)/share/muacme
 sysconfdir  := /etc
 
 INSTALL     := install
@@ -23,6 +24,8 @@ install:
 	$(INSTALL) -d $(DESTDIR)$(sysconfdir)/$(SCRIPT_NAME)
 	$(INSTALL) -m 644 $(SCRIPT_NAME).conf $(DESTDIR)$(sysconfdir)/$(SCRIPT_NAME)/$(SCRIPT_NAME).conf
 	$(INSTALL) -m 755 renew-hook.sh $(DESTDIR)$(sysconfdir)/$(SCRIPT_NAME)/renew-hook.sh
+	$(INSTALL) -d $(DESTDIR)$(datadir)
+	$(INSTALL) -m 755 httpd-challenge-hook.sh $(DESTDIR)$(datadir)/httpd-challenge-hook.sh
 
 #: Update version in the script and README.adoc to $VERSION.
 bump-version:

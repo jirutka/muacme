@@ -13,6 +13,11 @@ This a convenient wrapper for the ACMEv2 client https://github.com/ndilieto/uacm
 * `grep`, `sed`, `tr`, `xargs` (BSD, Busybox or GNU)
 * `openssl` command (should work with OpenSSL and LibreSSL)
 
+httpd-challenge-hook.sh:
+
+* `busybox httpd`
+* `start-stop-daemon` from OpenRC
+
 
 == Installation
 
