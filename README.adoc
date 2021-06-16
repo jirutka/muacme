@@ -74,6 +74,22 @@ muacme renew -f example.org
 exec muacme renew -l all
 
 
+== httpd-challenge-hook.sh
+
+link:httpd-challenge-hook.sh[] is a hook script for the https://letsencrypt.org/docs/challenge-types/#http-01-challenge[HTTP-01 challenge] that automatically starts https://busybox.net[busybox] httpd server on port 80 to serve the key authorization for the challenge verification and stops it right after it’s done.
+
+The complete process of renewal looks like this:
+
+. A cron job starts `muacme renew -l all`.
+. `muacme` invokes `uacme` for each certificate found in _/etc/ssl/uacme/_.
+. `uacme` checks the certificate expiration date; if it’s near expiration (parameter `days` in link:muacme.conf[]), uacme initiates HTTP-01 challenge.
+. `uacme` executes link:httpd-challenge-hook.sh[] script that writes the validation file for Let’s Encrypt into a temporary directory and *starts a webserver* (`busybox httpd`) *on port 80* to serve this file.
+. Let’s Encrypt retrieves the validation file from `++http://<domain>/.well-known/acme-challenge/<token>++`.
+. `uacme` sends CSR to Let’s Encrypt and retrieves the signed certificate.
+. `uacme` executes link:httpd-challenge-hook.sh[] script again to remove the verification file and *stop the webserver*.
+. `uacme` executes your link:renew-hook.sh[] script to reload services etc.
+
+
 == License
 
 This project is licensed under http://opensource.org/licenses/MIT/[MIT License].
