@@ -303,6 +303,8 @@ if [ "$_from_file" = yes ] && ! [ -r "$1" ]; then
 	die 3 "file '$1' does not exist or not readable!"
 fi
 
+export MUACME_CONFIG=$UACME_CONFIG  # export to be available in hooks
+
 if yesno "$syslog"; then
 	$_action "$@" 2>&1 | logger -s -t "$PROGNAME" -p "$syslog_facility.debug"
 else
