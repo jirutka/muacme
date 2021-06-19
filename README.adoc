@@ -19,6 +19,10 @@ httpd-challenge-hook.sh:
 * `busybox httpd`
 * `start-stop-daemon` from OpenRC
 
+nsupdate-challenge-hook.sh:
+
+* `knsupdate` and `kdig` from Knot DNS tools or `nsupdate` and `dig` from BIND tools
+
 
 == Installation
 
@@ -30,6 +34,8 @@ Install package {proj-name} from the Alpine’s community repository:
 apk add {proj-name}
 # if you wanna use httpd-challenge-hook.sh:
 apk add busybox-extras
+# if you wanna use nsupdate-challenge-hook.sh:
+apk add knot-utils
 
 
 === From Tarball
@@ -103,6 +109,14 @@ The complete process of renewal looks like this:
 . `uacme` executes your link:renew-hook.sh[] script to reload services etc.
 
 
+== nsupdate-challenge-hook.sh
+
+link:nsupdate-challenge-hook.sh[] is a hook script for https://letsencrypt.org/docs/challenge-types/#dns-01-challenge[DNS-01 challenge] that utilizes `knsupdate` (or `nsupdate`) to add/delete `_acme-challenge.<domain>` TXT record for the requested domain name.
+This script can be configured using {muacme-conf} or environment variables.
+
+If you want to use `nsupdate` and `dig` instead of their Knot variants, you have to overwrite options `dns01_nsupdate` and `dns01_dig`.
+
+
 == License
 
 This project is licensed under http://opensource.org/licenses/MIT/[MIT License].
@@ -112,3 +126,5 @@ For the full text of the license, see the link:LICENSE[LICENSE] file.
 == See Also
 
 * https://ndilieto.github.io/uacme/[uacme(1)]
+* https://www.knot-dns.cz/docs/3.0/html/man_kdig.html[kdig(1)]
+* https://www.knot-dns.cz/docs/3.0/html/man_knsupdate.html[knsupdate(1)]

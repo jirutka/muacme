@@ -26,6 +26,7 @@ install:
 	$(INSTALL) -m 755 renew-hook.sh $(DESTDIR)$(sysconfdir)/$(SCRIPT_NAME)/renew-hook.sh
 	$(INSTALL) -d $(DESTDIR)$(datadir)
 	$(INSTALL) -m 755 httpd-challenge-hook.sh $(DESTDIR)$(datadir)/httpd-challenge-hook.sh
+	$(INSTALL) -m 755 nsupdate-challenge-hook.sh $(DESTDIR)$(datadir)/nsupdate-challenge-hook.sh
 
 #: Update version in the script and README.adoc to $VERSION.
 bump-version:
