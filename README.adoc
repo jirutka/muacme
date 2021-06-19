@@ -2,6 +2,7 @@
 :proj-name: muacme
 :gh-name: jirutka/{proj-name}
 :version: 0.4.0
+:muacme-conf: link:muacme.conf[/etc/muacme/muacme.conf]
 
 This a convenient wrapper for the ACMEv2 client https://github.com/ndilieto/uacme[uacme] that provides a ready-to-go solution for a cron-based periodic renewal of an arbitrary number of TLS certificates.
 
@@ -40,7 +41,7 @@ uacme -v -c /etc/ssl/uacme new [EMAIL]
 
 == Examples
 
-* Issue a certificate for domain _example.org_ with alternative name _www.example.org_ (and using options specified in the configuration file _/etc/muacme/muacme.conf_):
+* Issue a certificate for domain _example.org_ with alternative name _www.example.org_ (and using options specified in the configuration file {muacme-conf}):
 +
 [source, sh]
 muacme issue example.org www.example.org
@@ -82,7 +83,7 @@ The complete process of renewal looks like this:
 
 . A cron job starts `muacme renew -l all`.
 . `muacme` invokes `uacme` for each certificate found in _/etc/ssl/uacme/_.
-. `uacme` checks the certificate expiration date; if it’s near expiration (parameter `days` in link:muacme.conf[]), uacme generates a CSR and creates a new order at Let’s Encrypt.
+. `uacme` checks the certificate expiration date; if it’s near expiration (parameter `days` in {muacme-conf}), uacme generates a CSR and creates a new order at Let’s Encrypt.
 . `uacme` executes link:httpd-challenge-hook.sh[] script that writes the validation file for Let’s Encrypt into a temporary directory and *starts a webserver* (`busybox httpd`) *on port 80* to serve this file.
 . Let’s Encrypt retrieves the validation file from `++http://<domain>/.well-known/acme-challenge/<token>++`.
 . `uacme` retrieves the issued certificate from Let’s Encrypt.
