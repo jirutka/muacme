@@ -28,6 +28,10 @@ install:
 	$(INSTALL) -m 755 multi-challenge-hook.sh $(DESTDIR)$(datadir)/multi-challenge-hook.sh
 	$(INSTALL) -m 755 httpd-challenge-hook.sh $(DESTDIR)$(datadir)/httpd-challenge-hook.sh
 	$(INSTALL) -m 755 nsupdate-challenge-hook.sh $(DESTDIR)$(datadir)/nsupdate-challenge-hook.sh
+	$(SED) -E -i "s|/usr/share/muacme/|$(datadir)/|; s|/etc/muacme/|$(sysconfdir)/$(SCRIPT_NAME)/|" \
+		$(DESTDIR)$(bindir)/$(SCRIPT_NAME) \
+		$(DESTDIR)$(sysconfdir)/$(SCRIPT_NAME)/$(SCRIPT_NAME).conf \
+		$(DESTDIR)$(datadir)/*.sh
 
 #: Update version in the script and README.adoc to $VERSION.
 bump-version:
