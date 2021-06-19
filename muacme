@@ -88,8 +88,8 @@ yesno() {
 }
 
 log() {
-	local level="$1"
-	local msg="$2"
+	local level=$1
+	local msg=$2
 
 	if yesno "$syslog"; then
 		logger -s -t "$PROGNAME" -p "$syslog_facility.$level" "$msg" 2>&3
@@ -111,8 +111,8 @@ optif() {
 }
 
 issubset() {
-	local a="$1"
-	local b="$2"
+	local a=$1
+	local b=$2
 
 	local i; for i in $(printf '%s\n' $a); do
 		printf '%s\n' $b | grep -qFx "$i" || return 1
@@ -146,7 +146,7 @@ _uacme() {
 # Parses and prints Subject Alternative Names of the type DNS excluding the CN
 # from the specified PEM file.
 cert_altnames() {
-	local filename="$1"
+	local filename=$1
 	local cn=$(basename "${filename%/*}")  # derive CN from the cert's directory name
 	local san=
 
@@ -167,7 +167,7 @@ ls_domains() {
 }
 
 renew_cert() {
-	local domain="$1"
+	local domain=$1
 	local cert_file="$certs_dir/$domain/cert.pem"
 	local altnames=''
 
@@ -215,8 +215,8 @@ renew() {
 }
 
 issue_cert() {
-	local domain="$1"; shift
-	local altnames="$*"
+	local domain=$1; shift
+	local altnames=$*
 	local cert_file="$certs_dir/$domain/cert.pem"
 
 	if [ "$force" = no ] && [ -f "$cert_file" ] \
@@ -261,7 +261,7 @@ esac
 _from_file=no
 while getopts ':c:FfhlsVv' OPT; do
 	case "$OPT" in
-		c) UACME_CONFIG="$OPTARG";;
+		c) UACME_CONFIG=$OPTARG;;
 		f) UACME_FORCE=yes;;
 		F) _from_file=yes;;
 		h) help; exit 0;;
