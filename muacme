@@ -284,7 +284,7 @@ esac
 readonly _action
 
 [ -r "$UACME_CONFIG" ] \
-	|| die 3 "config '$UACME_CONFIG' does not exit or is not readable!"
+	|| die 3 "config '$UACME_CONFIG' does not exist or is not readable!"
 . "$UACME_CONFIG" \
 	|| die 3 "failed to source config $UACME_CONFIG!"
 
