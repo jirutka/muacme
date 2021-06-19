@@ -102,7 +102,9 @@ muacme renew -f example.org
 exec muacme renew -l all
 
 
-== httpd-challenge-hook.sh
+== Challenge Hooks
+
+=== httpd (HTTP-01)
 
 link:httpd-challenge-hook.sh[] is a hook script for the https://letsencrypt.org/docs/challenge-types/#http-01-challenge[HTTP-01 challenge] that automatically starts https://busybox.net[busybox] httpd server on port 80 to serve the key authorization for the challenge verification and stops it right after it’s done.
 
@@ -118,7 +120,7 @@ The complete process of renewal looks like this:
 . `uacme` executes your link:renew-hook.sh[] script to reload services etc.
 
 
-== nsupdate-challenge-hook.sh
+=== nsupdate (DNS-01)
 
 link:nsupdate-challenge-hook.sh[] is a hook script for https://letsencrypt.org/docs/challenge-types/#dns-01-challenge[DNS-01 challenge] that utilizes `knsupdate` (or `nsupdate`) to add/delete `_acme-challenge.<domain>` TXT record for the requested domain name.
 This script can be configured using {muacme-conf} or environment variables.
