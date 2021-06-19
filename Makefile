@@ -25,6 +25,7 @@ install:
 	$(INSTALL) -m 644 $(SCRIPT_NAME).conf $(DESTDIR)$(sysconfdir)/$(SCRIPT_NAME)/$(SCRIPT_NAME).conf
 	$(INSTALL) -m 755 renew-hook.sh $(DESTDIR)$(sysconfdir)/$(SCRIPT_NAME)/renew-hook.sh
 	$(INSTALL) -d $(DESTDIR)$(datadir)
+	$(INSTALL) -m 755 multi-challenge-hook.sh $(DESTDIR)$(datadir)/multi-challenge-hook.sh
 	$(INSTALL) -m 755 httpd-challenge-hook.sh $(DESTDIR)$(datadir)/httpd-challenge-hook.sh
 	$(INSTALL) -m 755 nsupdate-challenge-hook.sh $(DESTDIR)$(datadir)/nsupdate-challenge-hook.sh
 

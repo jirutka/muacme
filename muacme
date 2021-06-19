@@ -59,6 +59,7 @@ fi
 
 readonly PROGNAME='muacme'
 readonly VERSION='0.4.0'
+readonly MULTI_CHALLENGE_HOOK='/usr/share/muacme/multi-challenge-hook.sh'
 
 # Configuration variables that may be overwritten by the config file.
 acme_url=
@@ -293,9 +294,14 @@ staging=${UACME_STAGE:-$staging}
 syslog=${UACME_SYSLOG:-$syslog}
 verbose=${UACME_DEBUG:-$verbose}
 
-if [ "$challenge_hook" ] && ! [ -x "$challenge_hook" ]; then
-	die 3 "hook '$challenge_hook' does not exist or is not executable!"
+for _hook in $challenge_hook; do
+	[ -x "$_hook" ] || die 3 "hook '$_hook' does not exist or is not executable!"
+done
+if [ "$_hook" != "$challenge_hook" ]; then
+	export MUACME_CHALLENGE_HOOKS=$challenge_hook
+	challenge_hook=$MULTI_CHALLENGE_HOOK
 fi
+
 if [ "$renew_hook" ] && ! [ -x "$renew_hook" ]; then
 	die 3 "hook '$renew_hook' does not exist or is not executable!"
 fi
@@ -303,7 +309,9 @@ if [ "$_from_file" = yes ] && ! [ -r "$1" ]; then
 	die 3 "file '$1' does not exist or not readable!"
 fi
 
-export MUACME_CONFIG=$UACME_CONFIG  # export to be available in hooks
+# Export variables for hooks.
+export MUACME_CONFIG=$UACME_CONFIG
+export MUACME_DEBUG=$(yesno "$verbose" && echo 1 || echo 0)
 
 if yesno "$syslog"; then
 	$_action "$@" 2>&1 | logger -s -t "$PROGNAME" -p "$syslog_facility.debug"
