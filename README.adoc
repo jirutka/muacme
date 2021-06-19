@@ -1,10 +1,19 @@
 = μacme
+:toc: macro
+:toc-title:
+// custom
 :proj-name: muacme
 :gh-name: jirutka/{proj-name}
 :version: 0.4.0
 :muacme-conf: link:muacme.conf[/etc/muacme/muacme.conf]
 
 This a convenient wrapper for the ACMEv2 client https://github.com/ndilieto/uacme[uacme] that provides a ready-to-go solution for a cron-based periodic renewal of an arbitrary number of TLS certificates.
+
+
+[discrete]
+== Table of Contents
+
+toc::[]
 
 
 == Requirements
