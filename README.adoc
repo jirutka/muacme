@@ -22,6 +22,18 @@ httpd-challenge-hook.sh:
 
 == Installation
 
+=== On Alpine Linux
+
+Install package {proj-name} from the Alpine’s community repository:
+
+[source, sh, subs="+attributes"]
+apk add {proj-name}
+# if you wanna use httpd-challenge-hook.sh:
+apk add busybox-extras
+
+
+=== From Tarball
+
 [source, sh, subs="+attributes"]
 wget https://github.com/{gh-name}/archive/v{version}/{proj-name}-{version}.tar.gz
 tar -xzf {proj-name}-{version}.tar.gz
