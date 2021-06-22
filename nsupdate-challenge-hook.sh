@@ -26,7 +26,7 @@ _dig() {
 }
 
 lookup_soa_for() {
-	_dig +noall +authority "$1" SOA
+	_dig +noall +authority +answer "$1" SOA | grep 'IN\s*SOA\s'
 }
 
 lookup_txt_rdata() {
