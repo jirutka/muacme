@@ -58,7 +58,7 @@ else
 fi
 
 readonly PROGNAME='muacme'
-readonly VERSION='0.5.0'
+readonly VERSION='0.5.1'
 readonly MULTI_CHALLENGE_HOOK='/usr/share/muacme/multi-challenge-hook.sh'
 
 # Configuration variables that may be overwritten by the config file.
