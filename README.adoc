@@ -32,6 +32,11 @@ nsupdate-challenge-hook.sh:
 
 * `knsupdate` and `kdig` from Knot DNS tools or `nsupdate` and `dig` from BIND tools
 
+acmedns-challenge-hook.sh:
+
+* `kdig` from Knot DNS tools or `dig` from BIND tools
+* `wget` (tested with Busybox or GNU)
+
 
 == Installation
 
@@ -43,7 +48,7 @@ Install package {proj-name} from the Alpine’s community repository:
 apk add {proj-name}
 # if you wanna use httpd-challenge-hook.sh:
 apk add busybox-extras
-# if you wanna use nsupdate-challenge-hook.sh:
+# if you wanna use nsupdate-challenge-hook.sh or acmedns-challenge-hook.sh:
 apk add knot-utils
 
 
@@ -126,6 +131,17 @@ link:nsupdate-challenge-hook.sh[] is a hook script for https://letsencrypt.org/d
 This script can be configured using {muacme-conf} or environment variables.
 
 If you want to use `nsupdate` and `dig` instead of their Knot variants, you have to overwrite options `dns01_nsupdate` and `dns01_dig`.
+
+
+=== acmedns (DNS-01)
+
+link:acmedns-challenge-hook.sh[] is a hook script for https://letsencrypt.org/docs/challenge-types/#dns-01-challenge[DNS-01 challenge] that calls REST API provided by the https://github.com/joohoi/acme-dns[acme-dns] server to add `_acme-challenge.<domain>` TXT record for the requested domain name.
+This script can be configured using {muacme-conf} or environment variables.
+
+Before you can issue a certificate for a domain, you must do a registration on the acme-dns server and add the obtained subdomain, username and password to `/etc/muacme/acme-dns.keys`.
+This can be easily done using the provided `muacme-acmedns` script, for example `muacme-acmedns register https://auth.acme-dns.io`.
+
+If you want to use `dig` instead of its Knot variants, you have to overwrite option `dns01_dig`.
 
 
 == License

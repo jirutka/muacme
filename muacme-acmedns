@@ -1,0 +1,73 @@
+#!/bin/sh
+# vim: set ts=4 sw=4:
+set -eu
+
+readonly PROGNAME=$(basename "$0")
+
+usage() {
+	echo "Usage: $PROGNAME register <acme-dns-url> [<domain>]"
+}
+
+die() {
+	printf "$PROGNAME: %s\n" "$@" >&2
+	exit 1
+}
+
+json_get() {
+	local key="$1"
+	local json="$2"
+
+	printf '%s\n' "$json" | sed -En "s/.*\"$key\":\s*\"([^\"]*)\".*/\1/p"
+}
+
+
+case "${1-}" in
+	-h | --help) usage; exit 0;;
+esac
+if [ $# -lt 2 ] || [ "${1-}" != 'register' ]; then
+	usage >&2
+	exit 1
+fi
+
+acmedns_url="${2%/register}"
+domain="${3:-}"
+
+if [ -z "${DNS01_ACMEDNS_KEYS-}" ]; then
+	: ${MUACME_CONFIG:="/etc/muacme/muacme.conf"}
+
+	[ -r "$MUACME_CONFIG" ] \
+		|| die "config '$MUACME_CONFIG' does not exist or is not readable!"
+	. "$MUACME_CONFIG" \
+		|| die "failed to source config $MUACME_CONFIG!"
+
+	DNS01_ACMEDNS_KEYS="${dns01_acmedns_keys:-"/etc/muacme/acme-dns.keys"}"
+fi
+
+json=$(wget -O - -q -U 'muacme' --post-data '' ${DEBUG:+-S} "$acmedns_url/register") \
+	|| die "failed to register on $acmedns_url"
+
+acme_fqdn=$(json_get 'fulldomain' "$json")
+username=$(json_get 'username' "$json")
+password=$(json_get 'password' "$json")
+
+if [ -z "$acme_fqdn" ] || [ -z "$username" ] || [ -z "$password" ]; then
+	die "invalid reply from $acmedns_url: $json"
+fi
+
+if ! [ -e "$DNS01_ACMEDNS_KEYS" ]; then
+	( umask 0077; touch "$DNS01_ACMEDNS_KEYS" )
+fi
+
+acme_subdomain=${acme_fqdn%%.*}
+if grep -qFw "$acme_subdomain:" "$DNS01_ACMEDNS_KEYS" 2>/dev/null; then
+	die "$acme_subdomain already exists in $DNS01_ACMEDNS_KEYS"
+fi
+
+echo "Adding new entry to $DNS01_ACMEDNS_KEYS:"
+entry="$acme_subdomain:$username:$password${domain:+  # $domain}"
+echo "  $entry"
+echo "$entry" >> "$DNS01_ACMEDNS_KEYS"
+
+echo ''
+echo 'Now add the following record to your DNS server:'
+echo "  _acme-challenge.${domain:-"<domain-you-want-cert-for>"}. CNAME $acme_fqdn."
