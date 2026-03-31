@@ -249,7 +249,8 @@ issue() {
 # stdout/stderr of the main part of the script (that includes direct logging to
 # syslog) to syslog on the debug level without duplicating messages.
 exec 3>&2
-trap 'exec 3<&-' EXIT HUP INT TERM
+trap 'exec 3<&-; exit 0' EXIT
+trap 'exec 3<&-; exit 130' HUP INT TERM
 
 _action=
 case "${1:-}" in
